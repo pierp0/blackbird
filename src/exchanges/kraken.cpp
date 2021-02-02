@@ -35,14 +35,14 @@ quote_t getQuote(Parameters &params)
   else
   {
     auto &exchange = queryHandle(params);
-    krakenTicker.reset(exchange.getRequest("/0/public/Ticker?pair=XXBTZUSD"));
+    krakenTicker.reset(exchange.getRequest("/0/public/Ticker?pair=XXBTZEUR"));
     krakenGotTicker = true;
   }
   json_t *root = krakenTicker.get();
-  const char *quote = json_string_value(json_array_get(json_object_get(json_object_get(json_object_get(root, "result"), "XXBTZUSD"), "b"), 0));
+  const char *quote = json_string_value(json_array_get(json_object_get(json_object_get(json_object_get(root, "result"), "XXBTZEUR"), "b"), 0));
   auto bidValue = quote ? std::stod(quote) : 0.0;
 
-  quote = json_string_value(json_array_get(json_object_get(json_object_get(json_object_get(root, "result"), "XXBTZUSD"), "a"), 0));
+  quote = json_string_value(json_array_get(json_object_get(json_object_get(json_object_get(root, "result"), "XXBTZEUR"), "a"), 0));
   auto askValue = quote ? std::stod(quote) : 0.0;
 
   return std::make_pair(bidValue, askValue);
@@ -57,9 +57,9 @@ double getAvail(Parameters &params, std::string currency)
     return 0.0;
   }
   double available = 0.0;
-  if (currency.compare("usd") == 0)
+  if (currency.compare("eur") == 0)
   {
-    const char *avail_str = json_string_value(json_object_get(result, "ZUSD"));
+    const char *avail_str = json_string_value(json_object_get(result, "ZEUR"));
     available = avail_str ? atof(avail_str) : 0.0;
   }
   else if (currency.compare("btc") == 0)
@@ -89,7 +89,7 @@ std::string sendOrder(Parameters &params, std::string direction, double quantity
   *params.logFile << "<Kraken> Trying to send a \"" << direction << "\" limit order: "
                   << std::setprecision(6) << quantity << " @ $"
                   << std::setprecision(2) << price << "...\n";
-  std::string pair = "XXBTZUSD";
+  std::string pair = "XXBTZEUR";
   std::string type = direction;
   std::string ordertype = "limit";
   std::string pricelimit = std::to_string(price);
@@ -118,7 +118,7 @@ std::string sendShortOrder(Parameters &params, std::string direction, double qua
   *params.logFile << "<Kraken> Trying to send a short \"" << direction << "\" limit order: "
                   << std::setprecision(6) << quantity << " @ $"
                   << std::setprecision(2) << price << "...\n";
-  std::string pair = "XXBTZUSD";
+  std::string pair = "XXBTZEUR";
   std::string type = direction;
   std::string ordertype;
   std::string options;
@@ -173,8 +173,8 @@ double getActivePos(Parameters &params)
 double getLimitPrice(Parameters &params, double volume, bool isBid)
 {
   auto &exchange = queryHandle(params);
-  unique_json root { exchange.getRequest("/0/public/Depth?pair=XXBTZUSD") };
-  auto branch = json_object_get(json_object_get(root.get(), "result"), "XXBTZUSD");
+  unique_json root { exchange.getRequest("/0/public/Depth?pair=XXBTZEUR") };
+  auto branch = json_object_get(json_object_get(root.get(), "result"), "XXBTZEUR");
   branch = json_object_get(branch, isBid ? "bids" : "asks");
 
   // loop on volume
@@ -243,19 +243,19 @@ void testKraken()
   std::cout << "Current value LEG1_LEG2 bid: " << getQuote(params).bid() << std::endl;
   std::cout << "Current value LEG1_LEG2 ask: " << getQuote(params).ask() << std::endl;
   std::cout << "Current balance BTC: " << getAvail(params, "btc") << std::endl;
-  std::cout << "Current balance USD: " << getAvail(params, "usd") << std::endl;
+  std::cout << "Current balance EUR: " << getAvail(params, "eur") << std::endl;
   std::cout << "Current balance ETH: " << getAvail(params, "eth") << std::endl;
   std::cout << "Current balance XMR: " << getAvail(params, "xmr") << std::endl;
   std::cout << "current bid limit price for .09 units: " << getLimitPrice(params, 0.09, true) << std::endl;
   std::cout << "Current ask limit price for .09 units: " << getLimitPrice(params, 0.09, false) << std::endl;
-  //std::cout << "Sending buy order for 0.01 XMR @ $100 USD - TXID: " << std::endl;
+  //std::cout << "Sending buy order for 0.01 XMR @ $100 EUR - TXID: " << std::endl;
   //orderId = sendLongOrder(params, "buy", 0.01, 100);
   //std::cout << orderId << std::endl;
   ///// if you don't wait bittrex won't recognize order for iscomplete
   //sleep(5);
   //std::cout << "Buy Order is complete: " << isOrderComplete(params, orderId) << std::endl;
 
-  //std::cout << "Sending Short XMR order for 0.177 XMR @BID! USD: ";
+  //std::cout << "Sending Short XMR order for 0.177 XMR @BID! EUR: ";
   //orderId = sendShortOrder(params,"sell",0.133, getLimitPrice(params,0.133,true));
   //std::cout << orderId << std::endl;
   //std::cout << "Closing Short XMR order for .09 - TXID: ";
@@ -264,7 +264,7 @@ void testKraken()
 
   //vanilla sell orders below
   //std::cout << "Buy order is complete: " << isOrderComplete(params, orderId) << std::endl;
-  //std::cout << "Sending sell order for 0.01 XMR @ 5000 USD - TXID: " << std::endl ;
+  //std::cout << "Sending sell order for 0.01 XMR @ 5000 EUR - TXID: " << std::endl ;
   //orderId = sendLongOrder(params, "sell", 0.01, 5000);
   //std:: cout << orderId << std::endl;
   //std::cout << "Sell order is complete: " << isOrderComplete(params, orderId) << std::endl;

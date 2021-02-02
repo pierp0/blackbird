@@ -39,7 +39,7 @@ quote_t getQuote(Parameters &params)
   auto &exchange = queryHandle(params);
 
   std::string url;
-  url = "/v1/ticker/btcusd";
+  url = "/v1/ticker/btceur";
   
   unique_json root { exchange.getRequest(url) };
 
@@ -97,7 +97,7 @@ std::string sendOrder(Parameters& params, std::string direction, double quantity
                   << std::setprecision(6) << quantity << "@$"
                   << std::setprecision(2) << price << "...\n";
   std::ostringstream oss;
-  oss << "\"symbol\":\"btcusd\", \"amount\":\"" << quantity << "\", \"price\":\"" << price << "\", \"exchange\":\"bitfinex\", \"side\":\"" << direction << "\", \"type\":\"limit\"";
+  oss << "\"symbol\":\"btceur\", \"amount\":\"" << quantity << "\", \"price\":\"" << price << "\", \"exchange\":\"bitfinex\", \"side\":\"" << direction << "\", \"type\":\"limit\"";
   std::string options = oss.str();
   unique_json root { authRequest(params, "/v1/order/new", options) };
   auto orderId = std::to_string(json_integer_value(json_object_get(root.get(), "order_id")));
@@ -133,7 +133,7 @@ double getActivePos(Parameters& params)
 double getLimitPrice(Parameters& params, double volume, bool isBid)
 {
   auto &exchange  = queryHandle(params);
-  unique_json root { exchange.getRequest("/v1/book/btcusd") };
+  unique_json root { exchange.getRequest("/v1/book/btceur") };
   json_t *bidask  = json_object_get(root.get(), isBid ? "bids" : "asks");
 
   *params.logFile << "<Bitfinex> Looking for a limit price to fill "
